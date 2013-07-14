@@ -6,7 +6,7 @@ import AssemblyKeys._
 
 object BuildSettings {
   val buildOrganization = "org.scalanlp"
-  val buildScalaVersion = "2.10.1"
+  val buildScalaVersion = "2.10.3-SNAPSHOT"
 
   val scalaVersionRegex = "(\\d+)\\.(\\d+).*".r
 
@@ -18,37 +18,7 @@ object BuildSettings {
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
     ),
     crossScalaVersions := Seq("2.9.2", "2.10.1"),
-  publishMavenStyle := true,
-  publishTo <<= version { (v: String) =>
-    val nexus = "https://oss.sonatype.org/"
-    if (v.trim.endsWith("SNAPSHOT")) 
-      Some("snapshots" at nexus + "content/repositories/snapshots") 
-    else
-      Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-  },
-  publishArtifact in Test := false,
-  pomIncludeRepository := { _ => false },
-  pomExtra := (
-    <url>http://scalanlp.org/</url>
-    <licenses>
-      <license>
-        <name>Apache 2</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
-        <distribution>repo</distribution>
-      </license>
-    </licenses>
-    <scm>
-      <url>git@github.com:dlwh/breeze.git</url>
-      <connection>scm:git:git@github.com:dlwh/breeze.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>dlwh</id>
-        <name>David Hall</name>
-        <url>http://cs.berkeley.edu/~dlwh/</url>
-      </developer>
-    </developers>),
-  scalacOptions ++= Seq("-optimize","-deprecation","-language:_"),
+    scalacOptions ++= Seq("-optimize","-deprecation","-language:_", "-bootclasspath", "/home/sun/workspace/dev/miniboxing-plugin//components/runtime/target/scala-2.10/miniboxing-runtime_2.10-0.1-SNAPSHOT.jar:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar", "-Xplugin:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar"),
     javacOptions ++= Seq("-target", "1.6", "-source","1.6")
   )
 }

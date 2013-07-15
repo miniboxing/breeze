@@ -18,7 +18,18 @@ object BuildSettings {
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
     ),
     crossScalaVersions := Seq("2.9.2", "2.10.1"),
-    scalacOptions ++= Seq("-optimize","-deprecation","-language:_", "-bootclasspath", "/home/sun/workspace/dev/miniboxing-plugin//components/runtime/target/scala-2.10/miniboxing-runtime_2.10-0.1-SNAPSHOT.jar:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar", "-Xplugin:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar"),
+//    fork in Compile := true,
+//    scalacOptions ++= Seq("-optimize","-deprecation","-language:_", "-Xplugin:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar", "-P:minibox:hijack", "-P:minibox:log"),
+    scalacOptions ++= Seq("-optimize","-deprecation","-language:_"),
+//    javaOptions in Compile <+= (dependencyClasspath in Runtime) map { path =>
+//      def isBoot(file: java.io.File) =
+//        ((file.getName() startsWith "scala-") && (file.getName() endsWith ".jar"))
+//
+//      val cp = "-Xbootclasspath/a:"+path.map(_.data).filter(isBoot).mkString(":")+":/home/sun/workspace/dev/miniboxing-plugin//components/runtime/target/scala-2.10/miniboxing-runtime_2.10-0.1-SNAPSHOT.jar:/home/sun/workspace/dev/miniboxing-plugin//components/plugin/target/scala-2.10/miniboxing-plugin_2.10-0.1-SNAPSHOT.jar"
+//      println("OPTIONS: " + cp)
+//      cp
+//    },
+
     javacOptions ++= Seq("-target", "1.6", "-source","1.6")
   )
 }
@@ -45,7 +56,7 @@ object BreezeBuild extends Build {
             
 
 
-  val coreDeps = Seq(paranamer, opencsv, logging, log4j)
+  val coreDeps = Seq(paranamer, opencsv, logging, log4j, netlib, jblas, commonsMath, jtransforms)
   val commonDeps = Seq(paranamer, netlib, jblas, commonsMath, jtransforms)
   val vizDeps = Seq(
     "jfree" % "jcommon" % "1.0.16",

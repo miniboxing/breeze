@@ -49,11 +49,6 @@ class VectorBuilder[@spec(Double,Int, Float) E](private var _index: Array[Int],
                                                (implicit ring: Semiring[E],
                                                 dfv: DefaultArrayValue[E]) extends NumericOps[VectorBuilder[E]] with Serializable {
 
-  def this(length: Int, initialNonZero: Int = 0)(implicit ring: Semiring[E],
-                                                 man: ClassTag[E],
-                                                 dfv: DefaultArrayValue[E]) = this(new Array[Int](0), new Array[E](0), 0, length)
-
-
   def size = length
 
 
@@ -123,11 +118,11 @@ class VectorBuilder[@spec(Double,Int, Float) E](private var _index: Array[Int],
   }
 
   def copy: VectorBuilder[E] = {
-    new VectorBuilder[E](ArrayUtil.copyOf(index, index.length), ArrayUtil.copyOf(data, index.length), activeSize, size)
+    VectorBuilder.newww[E](ArrayUtil.copyOf(index, index.length), ArrayUtil.copyOf(data, index.length), activeSize, size)
   }
 
   def zerosLike: VectorBuilder[E] = {
-    new VectorBuilder[E](new Array[Int](0), ArrayUtil.newArrayLike(data, 0), 0, size)
+    VectorBuilder.newww[E](new Array[Int](0), ArrayUtil.newArrayLike(data, 0), 0, size)
   }
 
   def reserve(nnz: Int) {
@@ -254,8 +249,14 @@ class VectorBuilder[@spec(Double,Int, Float) E](private var _index: Array[Int],
 
 object VectorBuilder extends VectorBuilderOps_Double {
 
-  def zeros[@spec(Double, Float, Int) V: ClassTag:Semiring:DefaultArrayValue](size: Int, initialNonzero: Int = 16) = new VectorBuilder(size, initialNonzero)
-  def apply[@spec(Double, Float, Int) V:Semiring:DefaultArrayValue](values: Array[V]) = new VectorBuilder(Array.range(0,values.length), values, values.length, values.length)
+  def newww[@spec(Double,Int, Float) E](_index: Array[Int], _data: Array[E], used: Int, length: Int)(implicit ring: Semiring[E], dfv: DefaultArrayValue[E]): VectorBuilder[E] =
+    new VectorBuilder[E](_index, _data, used, length)(ring, dfv)
+
+  def newww[@spec(Double,Int, Float) E](length: Int, initialNonZero: Int = 0)(implicit ring: Semiring[E], man: ClassTag[E], dfv: DefaultArrayValue[E]): VectorBuilder[E] =
+    newww(new Array[Int](0), new Array[E](0), 0, length)(ring, dfv)
+
+  def zeros[@spec(Double, Float, Int) V: ClassTag:Semiring:DefaultArrayValue](size: Int, initialNonzero: Int = 16) = VectorBuilder.newww(size, initialNonzero)
+  def apply[@spec(Double, Float, Int) V:Semiring:DefaultArrayValue](values: Array[V]) = VectorBuilder.newww(Array.range(0,values.length), values, values.length, values.length)
 
   def apply[V:ClassTag:Semiring:DefaultArrayValue](values: V*):VectorBuilder[V] = apply(values.toArray)
   def fill[@spec(Double, Int, Float) V:ClassTag:Semiring:DefaultArrayValue](size: Int)(v: =>V):VectorBuilder[V] = apply(Array.fill(size)(v))

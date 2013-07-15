@@ -89,7 +89,7 @@ trait Vector[@spec(Int, Double, Float) E] extends VectorLike[E, Vector[E]]{
   }
 
   def toDenseVector(implicit cm: ClassTag[E]) = {
-    new DenseVector(toArray)
+    DenseVector.newww(toArray)
   }
 
   def toArray(implicit cm: ClassTag[E]) = {
@@ -116,7 +116,7 @@ object Vector extends VectorOps_Int
 
   // There's a bizarre error specializing float's here.
   class CanZipMapValuesVector[@specialized(Int, Double) V, @specialized(Int, Double) RV:ClassTag] extends CanZipMapValues[Vector[V],V,RV,Vector[RV]] {
-    def create(length : Int) = new DenseVector(new Array[RV](length))
+    def create(length : Int) = DenseVector.newww(new Array[RV](length))
 
     /**Maps all corresponding values from the two collection. */
     def map(from: Vector[V], from2: Vector[V], fn: (V, V) => RV) = {

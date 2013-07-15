@@ -181,7 +181,7 @@ class LinearProgram {
     }
 
     val sol = new SimplexSolver().optimize(obj, new LinearConstraintSet(constraints.asJava), GoalType.MAXIMIZE)
-    Result(new DenseVector(sol.getPoint),objective)
+    Result(DenseVector.newww(sol.getPoint),objective)
   }
 
 }

@@ -233,7 +233,7 @@ object NumericOps {
     implicit def binaryOpFromDVOp2Add[V](implicit op: BinaryOp[DenseVector[V], DenseVector[V], OpAdd, DenseVector[V]]): BinaryOp[Array[V], Array[V], OpAdd, Array[V]] = {
       new BinaryOp[Array[V], Array[V], OpAdd, Array[V]] {
         def apply(a: Array[V], b: Array[V]): Array[V] = {
-          val r = op(new DenseVector(a),new DenseVector[V](b))
+          val r = op(DenseVector.newww(a),DenseVector.newww[V](b))
           if(r.offset != 0 || r.stride != 1) {
             r.copy.data
           } else {
@@ -246,7 +246,7 @@ object NumericOps {
     implicit def binaryOpAddFromDVUOpAdd2[V](implicit op: BinaryOp[DenseVector[V], V, OpAdd, DenseVector[V]]) = {
       new BinaryOp[Array[V], V, OpAdd, Array[V]] {
         def apply(a: Array[V], b: V): Array[V] = {
-          val r = op(new DenseVector(a), b)
+          val r = op(DenseVector.newww(a), b)
           if(r.offset != 0 || r.stride != 1) {
             r.copy.data
           } else {
@@ -260,7 +260,7 @@ object NumericOps {
     implicit def binaryOpFromDVOp2[V,Op<:OpType](implicit op: BinaryOp[DenseVector[V], DenseVector[V], Op, DenseVector[V]]): BinaryOp[Array[V], Array[V], Op, Array[V]] = {
       new BinaryOp[Array[V], Array[V], Op, Array[V]] {
         def apply(a: Array[V], b: Array[V]): Array[V] = {
-          val r = op(new DenseVector(a),new DenseVector[V](b))
+          val r = op(DenseVector.newww(a),DenseVector.newww[V](b))
           if(r.offset != 0 || r.stride != 1) {
             r.copy.data
           } else {
@@ -274,7 +274,7 @@ object NumericOps {
     implicit def binaryUpdateOpFromDVDVOp[V,Op<:OpType](implicit op: BinaryUpdateOp[DenseVector[V], DenseVector[V], Op]) = {
       new BinaryUpdateOp[Array[V], Array[V], Op] {
         def apply(a: Array[V], b: Array[V]){
-          op(new DenseVector(a),new DenseVector(b))
+          op(DenseVector.newww(a),DenseVector.newww(b))
         }
       }
     }
@@ -282,7 +282,7 @@ object NumericOps {
     implicit def binaryOpFromDVUOp2[V,Op<:OpType](implicit op: BinaryOp[DenseVector[V], V, Op, DenseVector[V]]) = {
       new BinaryOp[Array[V], V, Op, Array[V]] {
         def apply(a: Array[V], b: V): Array[V] = {
-          val r = op(new DenseVector(a), b)
+          val r = op(DenseVector.newww(a), b)
           if(r.offset != 0 || r.stride != 1) {
             r.copy.data
           } else {
@@ -301,7 +301,7 @@ object NumericOps {
     implicit def binaryUpdateOpFromDVOp[V,Other,Op<:OpType, U](implicit op: BinaryUpdateOp[DenseVector[V], Other, Op], man: ClassTag[U]) = {
       new BinaryUpdateOp[Array[V], Other, Op] {
         def apply(a: Array[V], b: Other){
-          op(new DenseVector(a),b)
+          op(DenseVector.newww(a),b)
         }
       }
     }
@@ -312,7 +312,7 @@ object NumericOps {
                                                         dav: DefaultArrayValue[U]) = {
       new BinaryOp[Array[V], Other, Op, Array[U]] {
         def apply(a: Array[V], b: Other): Array[U] = {
-          val r = op(new DenseVector(a),b)
+          val r = op(DenseVector.newww(a),b)
           if(r.offset != 0 || r.stride != 1) {
             val z = DenseVector.zeros[U](r.length)
             z := r
@@ -328,7 +328,7 @@ object NumericOps {
   implicit def binaryUpdateOpFromDVVOp[V,Op<:OpType, U](implicit op: BinaryUpdateOp[DenseVector[V], U, Op], man: ClassTag[U]) = {
       new BinaryUpdateOp[Array[V], U, Op] {
         def apply(a: Array[V], b:U){
-          op(new DenseVector(a),b)
+          op(DenseVector.newww(a),b)
         }
       }
     }

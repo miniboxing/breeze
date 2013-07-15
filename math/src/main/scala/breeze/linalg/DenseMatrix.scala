@@ -107,7 +107,7 @@ extends Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
       if(!canFlattenView)
         throw new UnsupportedOperationException("Cannot make a view of this matrix.")
       else
-        new DenseVector(data, offset, 1, rows * cols)
+        DenseVector.newww(data, offset, 1, rows * cols)
     case View.Copy =>
       toDenseVector
     case View.Prefer =>
@@ -280,9 +280,9 @@ object DenseMatrix extends LowPriorityDenseMatrix
       def apply(m: DenseMatrix[V], ignored: ::.type, col: Int) = {
         if(col < 0 || col >= m.cols) throw new ArrayIndexOutOfBoundsException("Column must be in bounds for slice!")
         if(!m.isTranspose)
-          new DenseVector(m.data, length = m.rows, offset = col * m.majorStride + m.offset, stride=1)
+          DenseVector.newww(m.data, length = m.rows, offset = col * m.majorStride + m.offset, stride=1)
         else
-          new DenseVector(m.data, length=m.rows, offset = m.offset + col, stride = m.majorStride)
+          DenseVector.newww(m.data, length=m.rows, offset = m.offset + col, stride = m.majorStride)
       }
     }
   }
@@ -377,9 +377,9 @@ object DenseMatrix extends LowPriorityDenseMatrix
   implicit def canSlicePartOfCol[V]: CanSlice2[DenseMatrix[V], Range, Int, DenseVector[V]] = {
     new CanSlice2[DenseMatrix[V], Range, Int, DenseVector[V]] {
       def apply(m: DenseMatrix[V], rows: Range, col: Int) = {
-        if(rows.isEmpty) new DenseVector(m.data, 0, 0, 0)
+        if(rows.isEmpty) DenseVector.newww(m.data, 0, 0, 0)
         else if(!m.isTranspose) {
-          new DenseVector(m.data, col * m.rows + m.offset + rows.head, rows.step, rows.length)
+          DenseVector.newww(m.data, col * m.rows + m.offset + rows.head, rows.step, rows.length)
         } else {
           val m2 = canSlicePartOfRow(m.t, col, rows).t
           m2(::, 0)
@@ -943,7 +943,7 @@ trait DenseMatrixMultiplyStuff extends DenseMatrixOps_Double with DenseMatrixMul
   implicit object DenseMatrixCanSolveDenseVector extends BinaryOp[DenseMatrix[Double],DenseVector[Double],OpSolveMatrixBy,DenseVector[Double]] {
     override def apply(a : DenseMatrix[Double], b : DenseVector[Double]) = {
       val rv = a \ new DenseMatrix[Double](b.size, 1, b.data, b.offset, b.stride, true)
-      new DenseVector[Double](rv.data)
+      DenseVector.newww[Double](rv.data)
     }
   }
 

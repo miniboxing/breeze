@@ -89,7 +89,7 @@ object Dirichlet {
    */
   def sym(alpha : Double, k : Int) = this(Array.tabulate(k){ x => alpha })
   
-  def apply(arr: Array[Double]): Dirichlet[DenseVector[Double], Int] = Dirichlet( new DenseVector[Double](arr))
+  def apply(arr: Array[Double]): Dirichlet[DenseVector[Double], Int] = Dirichlet( DenseVector.newww[Double](arr))
 
 
   class ExpFam[T,I](exemplar: T)(implicit space: TensorSpace[T, I, Double], dav: DefaultArrayValue[T]) extends ExponentialFamily[Dirichlet[T,I],T] {

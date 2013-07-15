@@ -27,7 +27,7 @@ trait Encoder[T] {
   final def mkDenseVector(default: Double=0.0):DenseVector[Double] = {
     val array = new Array[Double](index.size)
     util.Arrays.fill(array, default)
-    new DenseVector(array)
+    DenseVector.newww(array)
   }
 
   /**
@@ -74,7 +74,7 @@ trait Encoder[T] {
    * All elements in the counter must be in the index unless ignoreOutOfIndex is true
    */
   def encodeSparse(c: Tensor[T,Double], ignoreOutOfIndex: Boolean = false):SparseVector[Double] = {
-    val vec = new VectorBuilder[Double](index.size)
+    val vec = VectorBuilder.newww[Double](index.size)
     vec.reserve(c.activeSize)
     for( (k,v) <- c.active.pairs) {
       val ki = index(k)
@@ -139,7 +139,7 @@ trait Encoder[T] {
   /**
    * Fills a DenseVector[Double] with each index given by the result of the function.
    */
-  def tabulateDenseVector(f: T=>Double)  = new DenseVector[Double](tabulateArray[Double](f))
+  def tabulateDenseVector(f: T=>Double)  = DenseVector.newww[Double](tabulateArray[Double](f))
 
   /**
    * Converts an array into a Map from T's to whatever was in the array.

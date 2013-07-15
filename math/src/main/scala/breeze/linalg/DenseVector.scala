@@ -45,8 +45,6 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
                                                val stride: Int,
                                                val length: Int) extends StorageVector[E]
                                               with VectorLike[E, DenseVector[E]] with Serializable{
-  def this(data: Array[E]) = this(data, 0, 1, data.length)
-  def this(data: Array[E], offset: Int) = this(data, offset, 1, data.length)
 
   // uncomment to get all the ridiculous places where specialization fails.
  // if(data.isInstanceOf[Array[Double]] && getClass.getName() == "breeze.linalg.DenseVector") throw new Exception("...")
@@ -101,7 +99,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
    */
   def copy: DenseVector[E] = {
     implicit val man = ClassTag[E](data.getClass.getComponentType.asInstanceOf[Class[E]])
-    val r = new DenseVector(new Array[E](length))
+    val r = DenseVector.newww(new Array[E](length))
     r := this
     r
   }
@@ -193,7 +191,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
   def slice(start: Int, end: Int, stride: Int=1):DenseVector[E] = {
     if(start > end || start < 0) throw new IllegalArgumentException("Slice arguments " + start +", " +end +" invalid.")
     if(end > length || end < 0) throw new IllegalArgumentException("End " + end + "is out of bounds for slice of DenseVector of length " + length)
-    new DenseVector(data, start + offset, stride * this.stride, (end-start)/stride)
+    DenseVector.newww(data, start + offset, stride * this.stride, (end-start)/stride)
   }
 
   override def toArray(implicit cm: ClassTag[E]) = if(stride == 1){
@@ -227,15 +225,23 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
                       with DenseVectorOps_HashVector_Int
                       with DenseVectorOps_HashVector_Complex
                       with DenseVector_SpecialOps {
+
+  def newww[@spec(Double, Int, Float) E](data: Array[E], offset: Int, stride: Int, length: Int): DenseVector[E] =
+    DenseVector.newww[E](data, offset, stride, length)
+  def newww[@spec(Double, Int, Float) E](data: Array[E]): DenseVector[E]  =
+    DenseVector.newww(data, 0, 1, data.length)
+  def newww[@spec(Double, Int, Float) E](data: Array[E], offset: Int): DenseVector[E] =
+    DenseVector.newww(data, offset, 1, data.length)
+
   def zeros[@spec(Double, Float, Int) V: ClassTag : DefaultArrayValue](size: Int) = {
     val data = new Array[V](size)
     if(size != 0 && data(0) != implicitly[DefaultArrayValue[V]].value)
       ArrayUtil.fill(data, 0, data.length, implicitly[DefaultArrayValue[V]].value)
-    new DenseVector(data)
+    DenseVector.newww(data)
   }
 
 
-  def apply[@spec(Double, Float, Int) V](values: Array[V]) = new DenseVector(values)
+  def apply[@spec(Double, Float, Int) V](values: Array[V]) = DenseVector.newww(values)
   def ones[@spec(Double, Float, Int) V: ClassTag:Semiring](size: Int) = {
     val r = apply(new Array[V](size))
     assert(r.stride == 1)
@@ -323,7 +329,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
           i += 1
           j += stride
         }
-        new DenseVector[V2](arr)
+        DenseVector.newww[V2](arr)
       }
 
       /**Maps all active key-value pairs from the given collection. */
@@ -372,7 +378,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
           i += 1
           j += stride
         }
-        new DenseVector[V2](arr)
+        DenseVector.newww[V2](arr)
       }
 
       /**Maps all active key-value pairs from the given collection. */
@@ -390,7 +396,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
       def apply(v: DenseVector[Any], r: Range) = {
         require(r.isEmpty || r.last < v.length)
         require(r.isEmpty || r.start >= 0)
-        new DenseVector(v.data, offset = v.offset + r.start, stride = v.stride * r.step, length = r.length)
+        DenseVector.newww(v.data, offset = v.offset + r.start, stride = v.stride * r.step, length = r.length)
       }
     }
   }
@@ -413,14 +419,14 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
       }
     }
   }
-  
+
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
     new CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] {
       def apply(from: DenseVector[Complex]) = {
-        new DenseMatrix(data = from.data map { _.conjugate }, 
-                        offset = from.offset, 
-                        cols = from.length, 
-                        rows = 1, 
+        new DenseMatrix(data = from.data map { _.conjugate },
+                        offset = from.offset,
+                        cols = from.length,
+                        rows = 1,
                         majorStride = from.stride)
       }
     }
@@ -428,7 +434,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
 
   // There's a bizarre error specializing float's here.
   class CanZipMapValuesDenseVector[@specialized(Int, Double, Float) V, @specialized(Int, Double) RV:ClassTag] extends CanZipMapValues[DenseVector[V],V,RV,DenseVector[RV]] {
-    def create(length : Int) = new DenseVector(new Array[RV](length))
+    def create(length : Int) = DenseVector.newww(new Array[RV](length))
 
     /**Maps all corresponding values from the two collection. */
     def map(from: DenseVector[V], from2: DenseVector[V], fn: (V, V) => RV) = {

@@ -26,6 +26,6 @@ class HaltonSequence(dim: Int) extends Rand[DenseVector[Double]] {
       }
       h % 1.0
     }
-    new DenseVector[Double](arr)
+    DenseVector.newww[Double](arr)
   }
 }

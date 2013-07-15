@@ -99,7 +99,7 @@ package object linalg extends LinearAlgebra {
    */
   def diag[@specialized(Double) V](m: DenseMatrix[V]): DenseVector[V] = {
     require(m.rows == m.cols, "m must be square")
-    new DenseVector(m.data, m.offset, m.majorStride + 1, m.rows)
+    DenseVector.newww(m.data, m.offset, m.majorStride + 1, m.rows)
   }
 
   // there's a weird compile error I don't understand if I try to use diag in DenseMatrix.scala directly.
@@ -1083,7 +1083,7 @@ trait LinearAlgebra {
     requireSquareMatrix(m)
     val (real, imag, evectors) = eig(m)
     require(norm(imag) == 0.0, "We cannot handle complex eigenvalues yet.")
-    val exped = new DenseVector(real.data.map(scala.math.pow(_, exp)))
+    val exped = DenseVector.newww(real.data.map(scala.math.pow(_, exp)))
 
     (evectors.t \ (evectors * diag(exped)).t).t
   }

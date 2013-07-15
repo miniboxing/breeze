@@ -95,9 +95,15 @@ class Beam[T](val maxSize:Int, xs : T*)(implicit o : Ordering[T]) extends Iterab
 }
 
 object Beam {
- implicit def canBuildFrom[T<%Ordered[T]] = new CanBuildFrom[Beam[T],T,Beam[T]] {
-   def apply() = sys.error("Sorry, need a max size")
+  implicit def canBuildFrom[T<%Ordered[T]] = new CanBuildFrom[Beam[T],T,Beam[T]] {
+    def apply() = sys.error("Sorry, need a max size")
 
-   def apply(from: Beam[T]) = from.newBuilder.asInstanceOf[scala.collection.mutable.Builder[T,breeze.collection.immutable.Beam[T]]];
- }
+    //[error] /mnt/data-local/Work/Workspace/dev/breeze/core/src/main/scala/breeze/collection/immutable/Beam.scala:101: type mismatch;
+    //[error]  found   : scala.collection.mutable.Builder[T,Iterable[T]]
+    //[error]  required: scala.collection.mutable.Builder[T,breeze.collection.immutable.Beam[T]]
+    //[error]    def apply(from: Beam[T]) = from.newBuilder;
+    //[error]                                    ^
+    //[error] one error found
+    def apply(from: Beam[T]) = from.newBuilder.asInstanceOf[scala.collection.mutable.Builder[T,breeze.collection.immutable.Beam[T]]];
+  }
 }

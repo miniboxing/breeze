@@ -2,40 +2,36 @@ package breeze.stats.random
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
 */
 
 
 /**
 * The Mersenne Twister is a random generator with a period of 2^19937-1,
 * which is absurdly long. It's known to be fairly fast, too.
-* 
+*
 * It needs a 32-bit integer seed.
 *
 * @author dlwh
 */
-class MersenneTwister(seed: Int) extends RandomGenerator {
-  /**
-  * Seeds the generator with System.currentTimeMillis.toInt
-  */
-  def this() = this(System.currentTimeMillis.toInt)
+class MersenneTwister(seed: Int = System.currentTimeMillis.toInt) extends RandomGenerator {
 
   // Create a length 624 array to store the state of the generator
   private val MT = new Array[Int](624)
   private var index = 0
   MT(0) = seed
-  for (i <- 1 to 623) { 
+  for (i <- 1 to 623) {
     MT(i) = (1812433253L * (MT(i-1) ^ (MT(i-1) >> 30)) + i)&0xffffffff toInt
   }
 

@@ -6,7 +6,7 @@ import breeze.storage.DefaultArrayValue
 import scala.reflect.ClassTag
 
 /**
- * 
+ *
  * @author dlwh
  */
 class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int, default: =>T)
@@ -31,7 +31,7 @@ class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int,
 
   override def getOrElseUpdate(i: Int, default: =>T): T = array.getOrElseUpdate(i,default)
 
-  override def empty = SparseArray.newwwMap[T](length,default)
+  override def empty = new SparseArrayMap[T](length,default)
 
   def +=(kv: (Int, T)):this.type = { update(kv._1,kv._2); this }
 
@@ -47,10 +47,10 @@ class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int,
 object SparseArrayMap {
   implicit def canMapValues[T,U:ClassTag:DefaultArrayValue]: CanBuildFrom[SparseArrayMap[T], (Int, U), SparseArrayMap[U]] = new CanBuildFrom[SparseArrayMap[T],(Int,U),SparseArrayMap[U]] {
     def apply(): Builder[(Int, U), SparseArrayMap[U]] = new Builder[(Int,U),SparseArrayMap[U]] {
-      var bld = SparseArray.newwwMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)
+      var bld = new SparseArrayMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)
       def result() = bld
 
-      def clear() {bld = SparseArray.newwwMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)}
+      def clear() {bld = new SparseArrayMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)}
 
       def +=(elem: (Int,U)):this.type = {
         bld(elem._1) = elem._2

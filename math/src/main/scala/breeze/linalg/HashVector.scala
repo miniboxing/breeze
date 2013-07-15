@@ -73,13 +73,14 @@ class HashVector[@specialized(Int, Double, Float) E](val array: OpenAddressHashA
 }
 
 
-object HashVector extends HashVectorOps_Int 
-                          with HashVectorOps_Float 
+object HashVector extends HashVectorOps_Int
+                          with HashVectorOps_Float
                           with HashVectorOps_Double
                           with HashVectorOps_Complex {
   def zeros[@specialized(Double, Float, Int) V: ClassTag:DefaultArrayValue](size: Int) = {
     new HashVector(OpenAddressHashArray.newww[V](size))
   }
+
   def apply[@specialized(Double, Float, Int) V:DefaultArrayValue](values: Array[V]) = {
     implicit val man = ClassTag[V](values.getClass.getComponentType.asInstanceOf[Class[V]])
     val oah = OpenAddressHashArray.newww[V](values.length)

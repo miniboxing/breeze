@@ -151,7 +151,7 @@ object SparseVector extends SparseVectorOps_Int
   def newww[@spec(Double,Int, Float) E](array: SparseArray[E])(implicit value: DefaultArrayValue[E]): SparseVector[E] =
     SparseVector.newww[E](array)(value)
   def newww[@spec(Double,Int, Float) E](index: Array[Int], data: Array[E], activeSize: Int, length: Int)(implicit value: DefaultArrayValue[E]): SparseVector[E] =
-    SparseVector.newww(new SparseArray(index, data, activeSize, length, value.value))
+    SparseVector.newww(SparseArray.newww(index, data, activeSize, length, value.value))
   def newww[@spec(Double,Int, Float) E](index: Array[Int], data: Array[E], length: Int)(implicit value: DefaultArrayValue[E]): SparseVector[E] =
     SparseVector.newww(index, data, index.length, length)
 
@@ -172,7 +172,7 @@ object SparseVector extends SparseVectorOps_Int
 
 
   def vertcat[V:DefaultArrayValue:ClassTag](vectors: SparseVector[V]*): SparseVector[V] = {
-    val resultArray = vectors.map(_.array).foldLeft(new SparseArray[V](0))(_ concatenate _)
+    val resultArray = vectors.map(_.array).foldLeft(SparseArray.newww[V](0))(_ concatenate _)
     SparseVector.newww(resultArray)
   }
 

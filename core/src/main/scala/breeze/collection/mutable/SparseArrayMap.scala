@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
  */
 class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int, default: =>T)
   extends scala.collection.mutable.Map[Int,T] with MapLike[Int,T,SparseArrayMap[T]] with Serializable {
-  val array = new SparseArray[T](length)
+  val array = SparseArray.newww[T](length)
 
   def activeSize = array.activeSize
 
@@ -31,7 +31,7 @@ class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int,
 
   override def getOrElseUpdate(i: Int, default: =>T): T = array.getOrElseUpdate(i,default)
 
-  override def empty = new SparseArrayMap[T](length,default)
+  override def empty = SparseArray.newwwMap[T](length,default)
 
   def +=(kv: (Int, T)):this.type = { update(kv._1,kv._2); this }
 
@@ -47,10 +47,10 @@ class SparseArrayMap[@specialized T:ClassTag:DefaultArrayValue](val length: Int,
 object SparseArrayMap {
   implicit def canMapValues[T,U:ClassTag:DefaultArrayValue]: CanBuildFrom[SparseArrayMap[T], (Int, U), SparseArrayMap[U]] = new CanBuildFrom[SparseArrayMap[T],(Int,U),SparseArrayMap[U]] {
     def apply(): Builder[(Int, U), SparseArrayMap[U]] = new Builder[(Int,U),SparseArrayMap[U]] {
-      var bld = new SparseArrayMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)
+      var bld = SparseArray.newwwMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)
       def result() = bld
 
-      def clear() {bld = new SparseArrayMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)}
+      def clear() {bld = SparseArray.newwwMap[U](Int.MaxValue,implicitly[DefaultArrayValue[U]].value)}
 
       def +=(elem: (Int,U)):this.type = {
         bld(elem._1) = elem._2

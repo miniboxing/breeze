@@ -38,16 +38,6 @@ final class SparseArray[@specialized(Int, Float, Double) Elem](var index: Array[
                         val size: Int,
                         val default: Elem) extends ArrayLike[Elem] with Storage[Elem] with Serializable {
 
-
-
-  def this(size: Int, default: Elem)(implicit manElem: ClassTag[Elem]) = {
-    this(Array.empty,Array.empty,0, size, default)
-  }
-
-  def this(size: Int)(implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]) = {
-    this(size, ConfigurableDefault.default[Elem].value(defaultArrayValue))
-  }
-
   @inline
   final def apply(i: Int):Elem = {
     val offset = findOffset(i)
@@ -108,7 +98,7 @@ final class SparseArray[@specialized(Int, Float, Double) Elem](var index: Array[
         }
         i += 1
       }
-      new SparseArray[B](newIndex, newData, o, length, newDefault)
+      SparseArray.newww[B](newIndex, newData, o, length, newDefault)
     } else {
       // no default values stored or f(default) is non-default
       val newDefault = f(default)
@@ -132,7 +122,7 @@ final class SparseArray[@specialized(Int, Float, Double) Elem](var index: Array[
         newData(o) = newDefault
         o += 1
       }
-      val rv = new SparseArray[B](newIndex, newData, o, length, newDefault)
+      val rv = SparseArray.newww[B](newIndex, newData, o, length, newDefault)
       rv.compact()
       rv
     }
@@ -165,13 +155,13 @@ final class SparseArray[@specialized(Int, Float, Double) Elem](var index: Array[
         ii -= 1
         newLength -= 1
       }
-      new SparseArray[Elem](newIndex, newData, o, newLength, default)
+      SparseArray.newww[Elem](newIndex, newData, o, newLength, default)
     } else {
       // if default values are not accepted, return a "dense" array by
       // setting each position in newIndex consecutively to forget missing
       // values
       val newLength = o
-      new SparseArray[Elem](Array.range(0,newLength), newData.take(newLength), newLength, newLength, default)
+      SparseArray.newww[Elem](Array.range(0,newLength), newData.take(newLength), newLength, newLength, default)
     }
   }
 
@@ -409,19 +399,30 @@ final class SparseArray[@specialized(Int, Float, Double) Elem](var index: Array[
     reserve(used)
   }
 
-  def concatenate(that:SparseArray[Elem])(implicit man :ClassTag[Elem]):SparseArray[Elem]={ 
+  def concatenate(that:SparseArray[Elem])(implicit man :ClassTag[Elem]):SparseArray[Elem]={
     if(this.default!=that.default) throw new IllegalArgumentException("default values should be equal")
-    new SparseArray((this.index.slice(0,this.used) union that.index.slice(0,that.used).map(_ + this.size)).toArray,
-		    (this.data.slice(0,this.used) union that.data.slice(0,that.used)).toArray,
-		    this.used+that.used,
-		    this.size+that.size,
-		    this.default)
+    SparseArray.newww((this.index.slice(0,this.used) union that.index.slice(0,that.used).map(_ + this.size)).toArray,
+        (this.data.slice(0,this.used) union that.data.slice(0,that.used)).toArray,
+        this.used+that.used,
+        this.size+that.size,
+        this.default)
   }
 }
 
 object SparseArray {
+  def newww[@specialized(Int, Float, Double) Elem](index: Array[Int], data: Array[Elem], used: Int, size: Int, default: Elem): SparseArray[Elem] =
+    new SparseArray[Elem](index, data, used, size, default)
+
+  def newww[@specialized(Int, Float, Double) Elem](size: Int, default: Elem)(implicit manElem: ClassTag[Elem]): SparseArray[Elem] = {
+    SparseArray.newww(Array.empty,Array.empty,0, size, default)
+  }
+
+  def newww[@specialized(Int, Float, Double) Elem](size: Int)(implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]): SparseArray[Elem] = {
+    SparseArray.newww(size, ConfigurableDefault.default[Elem].value(defaultArrayValue))
+  }
+
   def apply[@specialized(Int, Float, Double) T:ClassTag:DefaultArrayValue](values : T*) = {
-    val rv = new SparseArray[T](Array.range(0, values.length), values.toArray, values.length, values.length, implicitly[DefaultArrayValue[T]].value)
+    val rv = SparseArray.newww[T](Array.range(0, values.length), values.toArray, values.length, values.length, implicitly[DefaultArrayValue[T]].value)
     rv.compact()
     rv
   }
@@ -437,7 +438,7 @@ object SparseArray {
    */
   def fill[@specialized(Int, Float, Double) T:ClassTag:DefaultArrayValue](length : Int)(value : =>T) : SparseArray[T] = {
     if (value != implicitly[DefaultArrayValue[T]].value) {
-      val rv = new SparseArray[T](size = length)
+      val rv = SparseArray.newww[T](size = length)
       var i = 0
       while (i < length) {
         rv(i) = value
@@ -445,12 +446,12 @@ object SparseArray {
       }
       rv
     } else {
-      new SparseArray[T](length)
+      SparseArray.newww[T](length)
     }
   }
 
   def create[@specialized(Int, Float, Double) T:ClassTag:DefaultArrayValue](length : Int)(values : (Int,T)*) = {
-    val rv = new SparseArray[T](length)
+    val rv = SparseArray.newww[T](length)
     for ((k,v) <- values) {
       rv(k) = v
     }
@@ -458,7 +459,7 @@ object SparseArray {
   }
 
   def tabulate[@specialized(Int, Float, Double) T:ClassTag:DefaultArrayValue](length : Int)(fn : (Int => T)) = {
-    val rv = new SparseArray[T](length)
+    val rv = SparseArray.newww[T](length)
     var i = 0
     while (i < length) {
       val v = fn(i)

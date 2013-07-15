@@ -2,18 +2,18 @@ package breeze.collection.immutable;
 
 /*
  Copyright 2009 David Hall, Daniel Ramage
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
- You may obtain a copy of the License at 
- 
+ You may obtain a copy of the License at
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
- limitations under the License. 
+ limitations under the License.
 */
 
 
@@ -25,7 +25,7 @@ import scala.collection.generic._;
 /**
  * Represents a beam, which is essentially a priority queue
  * with a maximum size.
- * 
+ *
  * @author dlwh
  */
 class Beam[T](val maxSize:Int, xs : T*)(implicit o : Ordering[T]) extends Iterable[T] with IterableLike[T,Beam[T]] { outer =>
@@ -52,7 +52,7 @@ class Beam[T](val maxSize:Int, xs : T*)(implicit o : Ordering[T]) extends Iterab
   /** Just convert each element to the new value. Will trigger
    * a reordering.
    */
-  def map[U](f: T=>U)(implicit ordering: Ordering[U]) = new Beam[U](maxSize) { 
+  def map[U](f: T=>U)(implicit ordering: Ordering[U]) = new Beam[U](maxSize) {
     override val heap = BinomialHeap[U]() ++ outer.heap.map(f);
   }
 
@@ -71,7 +71,7 @@ class Beam[T](val maxSize:Int, xs : T*)(implicit o : Ordering[T]) extends Iterab
       BinomialHeap[U]() ++ queue;
     }
   }
-  
+
   override def filter(f : T=>Boolean) = new Beam[T](maxSize) {
     override val heap = BinomialHeap[T]() ++ outer.heap.filter(f);
   }
@@ -89,7 +89,7 @@ class Beam[T](val maxSize:Int, xs : T*)(implicit o : Ordering[T]) extends Iterab
   def +(x:T) = new Beam[T](maxSize) {
     override val heap = cat(outer.heap,x);
   }
-  
+
   def iterator = heap.iterator;
   override def toString() = iterator.mkString("Beam(",",",")");
 }
@@ -98,6 +98,6 @@ object Beam {
  implicit def canBuildFrom[T<%Ordered[T]] = new CanBuildFrom[Beam[T],T,Beam[T]] {
    def apply() = sys.error("Sorry, need a max size")
 
-   def apply(from: Beam[T]) = from.newBuilder;
+   def apply(from: Beam[T]) = from.newBuilder.asInstanceOf[scala.collection.mutable.Builder[T,breeze.collection.immutable.Beam[T]]];
  }
 }

@@ -37,28 +37,6 @@ final class OpenAddressHashArray[@specialized(Int, Float, Long, Double) Elem] pr
                                  val defaultArrayValue: DefaultArrayValue[Elem]) extends Storage[Elem] with ArrayLike[Elem] with Serializable {
   require(size > 0, "Size must be positive, but got " + size)
 
-  def this(size: Int, default: ConfigurableDefault[Elem],
-           initialSize: Int)
-          (implicit manElem: ClassTag[Elem],
-           defaultArrayValue: DefaultArrayValue[Elem]) = {
-    this(OpenAddressHashArray.emptyIndexArray(OpenAddressHashArray.calculateSize(initialSize)),
-      default.makeArray(OpenAddressHashArray.calculateSize(initialSize)),
-      0,
-      size,
-      default)
-  }
-
-  def this(size: Int,
-           default: ConfigurableDefault[Elem])
-          (implicit manElem: ClassTag[Elem],
-           defaultArrayValue: DefaultArrayValue[Elem]) = {
-    this(size, default, 16)
-  }
-
-  def this(size: Int)(implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]) = {
-    this(size, ConfigurableDefault.default[Elem])
-  }
-
   def data = _data
   def index = _index
 
@@ -161,7 +139,7 @@ final class OpenAddressHashArray[@specialized(Int, Float, Long, Double) Elem] pr
   override def toString: String = activeIterator.mkString("OpenAddressHashArray(",", ", ")")
 
   def copy:OpenAddressHashArray[Elem] = {
-    new OpenAddressHashArray[Elem](util.Arrays.copyOf(_index, _index.length),
+    OpenAddressHashArray.newww[Elem](util.Arrays.copyOf(_index, _index.length),
       breeze.util.ArrayUtil.copyOf(_data, _data.length),
       load, size, default
     )
@@ -194,8 +172,28 @@ final class OpenAddressHashArray[@specialized(Int, Float, Long, Double) Elem] pr
 }
 
 object OpenAddressHashArray {
+
+  def newww[@specialized(Int, Float, Long, Double) Elem](_index: Array[Int], _data: Array[Elem], load: Int, size: Int, default: ConfigurableDefault[Elem] = ConfigurableDefault.default[Elem])
+           (implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]): OpenAddressHashArray[Elem] =
+    new OpenAddressHashArray[Elem](_index, _data, load, size, default)(manElem, defaultArrayValue)
+
+  def newww[@specialized(Int, Float, Long, Double) Elem](size: Int, default: ConfigurableDefault[Elem], initialSize: Int)
+           (implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]): OpenAddressHashArray[Elem] = {
+    OpenAddressHashArray.newww(OpenAddressHashArray.emptyIndexArray(OpenAddressHashArray.calculateSize(initialSize)),
+      default.makeArray(OpenAddressHashArray.calculateSize(initialSize)), 0, size, default)
+  }
+
+  def newww[@specialized(Int, Float, Long, Double) Elem](size: Int, default: ConfigurableDefault[Elem])(implicit manElem: ClassTag[Elem],
+           defaultArrayValue: DefaultArrayValue[Elem]): OpenAddressHashArray[Elem] = {
+    OpenAddressHashArray.newww(size, default, 16)
+  }
+
+  def newww[@specialized(Int, Float, Long, Double) Elem](size: Int)(implicit manElem: ClassTag[Elem], defaultArrayValue: DefaultArrayValue[Elem]): OpenAddressHashArray[Elem] = {
+    OpenAddressHashArray.newww(size, ConfigurableDefault.default[Elem])
+  }
+
   def apply[@specialized(Int, Float, Long, Double) T:ClassTag:DefaultArrayValue](values : T*) = {
-    val rv = new OpenAddressHashArray[T](values.length)
+    val rv = OpenAddressHashArray.newww[T](values.length)
     val default = implicitly[DefaultArrayValue[T]].value
     for( (v,i) <- values.zipWithIndex if v != default) {
       rv(i) = v

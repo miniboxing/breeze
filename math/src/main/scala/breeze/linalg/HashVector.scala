@@ -78,11 +78,11 @@ object HashVector extends HashVectorOps_Int
                           with HashVectorOps_Double
                           with HashVectorOps_Complex {
   def zeros[@specialized(Double, Float, Int) V: ClassTag:DefaultArrayValue](size: Int) = {
-    new HashVector(new OpenAddressHashArray[V](size))
+    new HashVector(OpenAddressHashArray.newww[V](size))
   }
   def apply[@specialized(Double, Float, Int) V:DefaultArrayValue](values: Array[V]) = {
     implicit val man = ClassTag[V](values.getClass.getComponentType.asInstanceOf[Class[V]])
-    val oah = new OpenAddressHashArray[V](values.length)
+    val oah = OpenAddressHashArray.newww[V](values.length)
     for( (v,i) <- values.zipWithIndex) oah(i) = v
     new HashVector(oah)
   }
@@ -123,7 +123,7 @@ object HashVector extends HashVectorOps_Int
 
       /**Maps all active key-value pairs from the given collection. */
       def mapActive(from: HashVector[V], fn: (V) => V2) = {
-        val out = new OpenAddressHashArray[V2](from.length)
+        val out = OpenAddressHashArray.newww[V2](from.length)
         var i = 0
         while(i < from.iterableSize) {
           if(from.isActive(i))
@@ -144,7 +144,7 @@ object HashVector extends HashVectorOps_Int
 
       /**Maps all active key-value pairs from the given collection. */
       def mapActive(from: HashVector[V], fn: (Int, V) => V2) = {
-        val out = new OpenAddressHashArray[V2](from.length)
+        val out = OpenAddressHashArray.newww[V2](from.length)
         var i = 0
         while(i < from.iterableSize) {
           if(from.isActive(i))

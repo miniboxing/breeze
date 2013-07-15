@@ -50,9 +50,6 @@ class SparseVector[@spec(Double,Int, Float) E](val array: SparseArray[E])
                                               extends StorageVector[E]
                                               with VectorLike[E, SparseVector[E]] with Serializable {
 
-  def this(index: Array[Int], data: Array[E], activeSize: Int, length: Int)(implicit value: DefaultArrayValue[E])  = this(new SparseArray(index, data, activeSize, length, value.value))
-  def this(index: Array[Int], data: Array[E], length: Int)(implicit value: DefaultArrayValue[E])  = this(index, data, index.length, length)
-
   def data  = array.data
   def index = array.index
   def activeSize = array.activeSize
@@ -101,7 +98,7 @@ class SparseVector[@spec(Double,Int, Float) E](val array: SparseArray[E])
   }
 
   def copy: SparseVector[E] = {
-    new SparseVector[E](ArrayUtil.copyOf(index, index.length), ArrayUtil.copyOf(data, index.length), activeSize, size)
+    SparseVector.newww[E](ArrayUtil.copyOf(index, index.length), ArrayUtil.copyOf(data, index.length), activeSize, size)
   }
 
   def reserve(nnz: Int) {
@@ -146,12 +143,20 @@ class SparseVector[@spec(Double,Int, Float) E](val array: SparseArray[E])
   def allVisitableIndicesActive: Boolean = true
 }
 
-object SparseVector extends SparseVectorOps_Int 
-                            with SparseVectorOps_Float 
+object SparseVector extends SparseVectorOps_Int
+                            with SparseVectorOps_Float
                             with SparseVectorOps_Double
                             with SparseVectorOps_Complex {
-  def zeros[@spec(Double, Float, Int) V: ClassTag:DefaultArrayValue](size: Int) = new SparseVector(Array.empty, Array.empty[V], 0, size)
-  def apply[@spec(Double, Float, Int) V:DefaultArrayValue](values: Array[V]) = new SparseVector(Array.range(0,values.length), values, values.length, values.length)
+
+  def newww[@spec(Double,Int, Float) E](array: SparseArray[E])(implicit value: DefaultArrayValue[E]): SparseVector[E] =
+    SparseVector.newww[E](array)(value)
+  def newww[@spec(Double,Int, Float) E](index: Array[Int], data: Array[E], activeSize: Int, length: Int)(implicit value: DefaultArrayValue[E]): SparseVector[E] =
+    SparseVector.newww(new SparseArray(index, data, activeSize, length, value.value))
+  def newww[@spec(Double,Int, Float) E](index: Array[Int], data: Array[E], length: Int)(implicit value: DefaultArrayValue[E]): SparseVector[E] =
+    SparseVector.newww(index, data, index.length, length)
+
+  def zeros[@spec(Double, Float, Int) V: ClassTag:DefaultArrayValue](size: Int) = SparseVector.newww(Array.empty, Array.empty[V], 0, size)
+  def apply[@spec(Double, Float, Int) V:DefaultArrayValue](values: Array[V]) = SparseVector.newww(Array.range(0,values.length), values, values.length, values.length)
 
   def apply[V:ClassTag:DefaultArrayValue](values: V*):SparseVector[V] = apply(values.toArray)
   def fill[@spec(Double, Int, Float) V:ClassTag:DefaultArrayValue](size: Int)(v: =>V):SparseVector[V] = apply(Array.fill(size)(v))
@@ -168,7 +173,7 @@ object SparseVector extends SparseVectorOps_Int
 
   def vertcat[V:DefaultArrayValue:ClassTag](vectors: SparseVector[V]*): SparseVector[V] = {
     val resultArray = vectors.map(_.array).foldLeft(new SparseArray[V](0))(_ concatenate _)
-    new SparseVector(resultArray)
+    SparseVector.newww(resultArray)
   }
 
   def horzcat[V:DefaultArrayValue:ClassTag](vectors: SparseVector[V]*):CSCMatrix[V] ={
@@ -219,7 +224,7 @@ object SparseVector extends SparseVectorOps_Int
           out(i) = fn(from.data(i))
           i += 1
         }
-        new SparseVector(from.index.take(from.activeSize), out, from.activeSize, from.length)
+        SparseVector.newww(from.index.take(from.activeSize), out, from.activeSize, from.length)
       }
     }
   }
@@ -272,7 +277,7 @@ object SparseVector extends SparseVectorOps_Int
           out(i) = fn(from.index(i), from.data(i))
           i += 1
         }
-        new SparseVector(from.index.take(from.used), out, from.used, from.length)
+        SparseVector.newww(from.index.take(from.used), out, from.used, from.length)
       }
     }
   }
@@ -310,7 +315,7 @@ object SparseVector extends SparseVectorOps_Int
   implicit val space_d = TensorSpace.make[SparseVector[Double], Int, Double]
   implicit val space_f = TensorSpace.make[SparseVector[Float], Int, Float]
   implicit val space_i = TensorSpace.make[SparseVector[Int], Int, Int]
-  
+
   implicit def canTranspose[V:ClassTag:DefaultArrayValue]: CanTranspose[SparseVector[V], CSCMatrix[V]] = {
     new CanTranspose[SparseVector[V], CSCMatrix[V]] {
       def apply(from: SparseVector[V]) = {
@@ -325,7 +330,7 @@ object SparseVector extends SparseVectorOps_Int
       }
     }
   }
-  
+
   implicit def canTransposeComplex: CanTranspose[SparseVector[Complex], CSCMatrix[Complex]] = {
     new CanTranspose[SparseVector[Complex], CSCMatrix[Complex]] {
       def apply(from: SparseVector[Complex]) = {

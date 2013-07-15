@@ -51,12 +51,6 @@ final class DenseMatrix[@specialized(Int, Float, Double) V](val rows: Int,
                                                             val majorStride: Int,
                                                             val isTranspose: Boolean = false)
 extends Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
-  /** Creates a matrix with the specified data array, rows, and columns. */
-  def this(rows: Int, cols: Int)(implicit man: ClassTag[V]) = this(rows, cols, new Array[V](rows * cols), 0, rows)
-  /** Creates a matrix with the specified data array, rows, and columns. Data must be column major */
-  def this(rows: Int, cols: Int, data: Array[V], offset: Int = 0) = this(rows, cols, data, offset, rows)
-  /** Creates a matrix with the specified data array and rows. columns inferred automatically */
-  def this(rows: Int, data: Array[V], offset: Int = 0) = this(rows, {assert(data.length % rows == 0); data.length/rows}, data, offset)
 
   def apply(row: Int, col: Int) = {
     if(row < 0 || row >= rows) throw new IndexOutOfBoundsException((row,col) + " not in [0,"+rows+") x [0," + cols+")")
@@ -139,10 +133,10 @@ extends Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
         if(!canFlattenView)
           throw new UnsupportedOperationException("Cannot make a view of this matrix.")
         else
-          new DenseMatrix(rows, _cols, data, offset, if(isTranspose) cols else rows, isTranspose)
+          DenseMatrix.newww(rows, _cols, data, offset, if(isTranspose) cols else rows, isTranspose)
       case View.Copy =>
         // calling copy directly gives a verify error. TODO: submit bug
-        val result = new DenseMatrix[V](this.rows, this.cols, ArrayUtil.newArrayLike(data, size))
+        val result = DenseMatrix.newww[V](this.rows, this.cols, ArrayUtil.newArrayLike(data, size))
         result := this
         result.reshape(rows, _cols, View.Require)
       case View.Prefer =>
@@ -187,7 +181,7 @@ extends Matrix[V] with MatrixLike[V, DenseMatrix[V]] with Serializable {
 
   def copy: DenseMatrix[V] = {
     implicit val man = ClassTag[V](data.getClass.getComponentType.asInstanceOf[Class[V]])
-    val result = new DenseMatrix[V](rows, cols, new Array[V](size))
+    val result = DenseMatrix.newww[V](rows, cols, new Array[V](size))
     result := this
     result
   }
@@ -204,6 +198,16 @@ object DenseMatrix extends LowPriorityDenseMatrix
                            with DenseMatrixMultOps_Complex
                            with DenseMatrixMultiplyStuff
                            with MatrixConstructors[DenseMatrix]  {
+  def newww[@specialized(Int, Float, Double) V](rows: Int, cols: Int, data: Array[V], offset: Int, majorStride: Int, isTranspose: Boolean = false): DenseMatrix[V] =
+    new DenseMatrix[V](rows, cols, data, offset, majorStride, isTranspose)
+  def newww[@specialized(Int, Float, Double) V](rows: Int, cols: Int)(implicit man: ClassTag[V]): DenseMatrix[V] =
+    DenseMatrix.newww(rows, cols, new Array[V](rows * cols), 0, rows)
+  def newww[@specialized(Int, Float, Double) V](rows: Int, cols: Int, data: Array[V], offset: Int = 0): DenseMatrix[V] =
+    DenseMatrix.newww(rows, cols, data, offset, rows)
+  def newww[@specialized(Int, Float, Double) V](rows: Int, data: Array[V], offset: Int = 0): DenseMatrix[V] =
+    DenseMatrix.newww(rows, {assert(data.length % rows == 0); data.length/rows}, data, offset)
+
+
   /**
    * The standard way to create an empty matrix, size is rows * cols
    */
@@ -211,11 +215,11 @@ object DenseMatrix extends LowPriorityDenseMatrix
     val data = new Array[V](rows * cols)
     if(rows * cols != 0 && data(0) != implicitly[DefaultArrayValue[V]].value)
       ArrayUtil.fill(data, 0, data.length, implicitly[DefaultArrayValue[V]].value)
-    new DenseMatrix(rows, cols, data)
+    DenseMatrix.newww(rows, cols, data)
   }
 
   def create[@specialized(Int, Float, Double) V:DefaultArrayValue](rows: Int, cols: Int, data: Array[V]): DenseMatrix[V] = {
-    new DenseMatrix(rows, cols, data)
+    DenseMatrix.newww(rows, cols, data)
   }
 
   /**
@@ -268,9 +272,9 @@ object DenseMatrix extends LowPriorityDenseMatrix
       def apply(m: DenseMatrix[V], row: Int, ignored: ::.type) = {
         if(row < 0 || row >= m.rows) throw new ArrayIndexOutOfBoundsException("Row must be in bounds for slice!")
         if(!m.isTranspose)
-          new DenseMatrix(1, m.cols, m.data, m.offset + row, m.majorStride)
+          DenseMatrix.newww(1, m.cols, m.data, m.offset + row, m.majorStride)
         else
-          new DenseMatrix(1, m.cols, m.data, m.offset + row * m.cols, 1)
+          DenseMatrix.newww(1, m.cols, m.data, m.offset + row * m.cols, 1)
       }
     }
   }
@@ -290,11 +294,11 @@ object DenseMatrix extends LowPriorityDenseMatrix
   implicit def canSliceRows[V]: CanSlice2[DenseMatrix[V], Range, ::.type, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], Range, ::.type, DenseMatrix[V]] {
       def apply(m: DenseMatrix[V], rows: Range, ignored: ::.type) = {
-        if(rows.isEmpty) new DenseMatrix(0, 0, m.data, 0, 0)
+        if(rows.isEmpty) DenseMatrix.newww(0, 0, m.data, 0, 0)
         else if(!m.isTranspose) {
           require(rows.step == 1, "Sorry, we can't support row ranges with step sizes other than 1")
           val first = rows.head
-          new DenseMatrix(rows.length, m.cols, m.data, m.offset + first, m.majorStride)
+          DenseMatrix.newww(rows.length, m.cols, m.data, m.offset + first, m.majorStride)
         } else {
           canSliceCols(m.t, ::, rows).t
         }
@@ -313,10 +317,10 @@ object DenseMatrix extends LowPriorityDenseMatrix
   implicit def canSliceCols[V]: CanSlice2[DenseMatrix[V], ::.type, Range, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], ::.type, Range, DenseMatrix[V]] {
       def apply(m: DenseMatrix[V], ignored: ::.type, cols: Range) = {
-        if(cols.isEmpty) new DenseMatrix(0, 0, m.data, 0, 1)
+        if(cols.isEmpty) DenseMatrix.newww(0, 0, m.data, 0, 1)
         else if(!m.isTranspose) {
           val first = cols.head
-          new DenseMatrix(m.rows, cols.length, m.data, m.offset + first * m.majorStride, m.majorStride * cols.step)
+          DenseMatrix.newww(m.rows, cols.length, m.data, m.offset + first * m.majorStride, m.majorStride * cols.step)
         } else {
           canSliceRows(m.t, cols, ::).t
         }
@@ -335,11 +339,11 @@ object DenseMatrix extends LowPriorityDenseMatrix
   implicit def canSliceColsAndRows[V]: CanSlice2[DenseMatrix[V], Range, Range, DenseMatrix[V]] = {
     new CanSlice2[DenseMatrix[V], Range, Range, DenseMatrix[V]] {
       def apply(m: DenseMatrix[V], rows: Range, cols: Range) = {
-        if(rows.isEmpty || cols.isEmpty) new DenseMatrix(0, 0, m.data, 0, 1)
+        if(rows.isEmpty || cols.isEmpty) DenseMatrix.newww(0, 0, m.data, 0, 1)
         else if(!m.isTranspose) {
           require(rows.step == 1, "Sorry, we can't support row ranges with step sizes other than 1 for non transposed matrices")
           val first = cols.head
-          new DenseMatrix(rows.length, cols.length, m.data, m.offset + first * m.rows + rows.head, m.majorStride * cols.step)
+          DenseMatrix.newww(rows.length, cols.length, m.data, m.offset + first * m.rows + rows.head, m.majorStride * cols.step)
         } else {
           require(cols.step == 1, "Sorry, we can't support col ranges with step sizes other than 1 for transposed matrices")
           canSliceColsAndRows(m.t, cols, rows).t
@@ -362,10 +366,10 @@ object DenseMatrix extends LowPriorityDenseMatrix
     new CanSlice2[DenseMatrix[V], Int, Range, DenseMatrix[V]] {
       def apply(m: DenseMatrix[V], row: Int, cols: Range) = {
         if(row < 0  || row > m.rows) throw new IndexOutOfBoundsException("Slice with out of bounds row! " + row)
-        if(cols.isEmpty) new DenseMatrix(0, 0, m.data, 0, 1)
+        if(cols.isEmpty) DenseMatrix.newww(0, 0, m.data, 0, 1)
         else if(!m.isTranspose) {
           val first = cols.head
-          new DenseMatrix(1, cols.length, m.data, m.offset + first * m.rows + row, m.majorStride * cols.step)
+          DenseMatrix.newww(1, cols.length, m.data, m.offset + first * m.rows + row, m.majorStride * cols.step)
         } else {
           require(cols.step == 1, "Sorry, we can't support col ranges with step sizes other than 1 for transposed matrices")
           canSlicePartOfCol(m.t, cols, row).t
@@ -403,7 +407,7 @@ object DenseMatrix extends LowPriorityDenseMatrix
           }
           j += 1
         }
-        new DenseMatrix[R](from.rows, from.cols, data)
+        DenseMatrix.newww[R](from.rows, from.cols, data)
       }
 
       override def mapActive(from : DenseMatrix[V], fn : (V=>R)) =
@@ -447,7 +451,7 @@ object DenseMatrix extends LowPriorityDenseMatrix
           }
           j += 1
         }
-        new DenseMatrix(from.rows, from.cols, data)
+        DenseMatrix.newww(from.rows, from.cols, data)
       }
 
       override def mapActive(from : DenseMatrix[V], fn : (((Int,Int),V)=>R)) =
@@ -458,19 +462,19 @@ object DenseMatrix extends LowPriorityDenseMatrix
   implicit def canTranspose[V]: CanTranspose[DenseMatrix[V], DenseMatrix[V]] = {
     new CanTranspose[DenseMatrix[V], DenseMatrix[V]] {
       def apply(from: DenseMatrix[V]) = {
-        new DenseMatrix(data = from.data, offset = from.offset, cols = from.rows, rows = from.cols, majorStride = from.majorStride, isTranspose = !from.isTranspose)
+        DenseMatrix.newww(data = from.data, offset = from.offset, cols = from.rows, rows = from.cols, majorStride = from.majorStride, isTranspose = !from.isTranspose)
       }
     }
   }
-  
+
   implicit def canTransposeComplex: CanTranspose[DenseMatrix[Complex], DenseMatrix[Complex]] = {
     new CanTranspose[DenseMatrix[Complex], DenseMatrix[Complex]] {
       def apply(from: DenseMatrix[Complex]) = {
-        new DenseMatrix(data = from.data map { _.conjugate }, 
-                        offset = from.offset, 
-                        cols = from.rows, 
-                        rows = from.cols, 
-                        majorStride = from.majorStride, 
+        DenseMatrix.newww(data = from.data map { _.conjugate },
+                        offset = from.offset,
+                        cols = from.rows,
+                        rows = from.cols,
+                        majorStride = from.majorStride,
                         isTranspose = !from.isTranspose)
       }
     }
@@ -587,7 +591,7 @@ object DenseMatrix extends LowPriorityDenseMatrix
 
   // There's a bizarre error specializing float's here.
   class CanZipMapValuesDenseMatrix[@specialized(Int, Double, Float) V, @specialized(Int, Double) RV: ClassTag] extends CanZipMapValues[DenseMatrix[V], V, RV, DenseMatrix[RV]] {
-    def create(rows: Int, cols: Int) = new DenseMatrix(rows, cols, new Array[RV](rows * cols))
+    def create(rows: Int, cols: Int) = DenseMatrix.newww(rows, cols, new Array[RV](rows * cols))
 
     /**Maps all corresponding values from the two collection. */
     def map(from: DenseMatrix[V], from2: DenseMatrix[V], fn: (V, V) => RV) = {
@@ -942,7 +946,7 @@ trait DenseMatrixMultiplyStuff extends DenseMatrixOps_Double with DenseMatrixMul
 
   implicit object DenseMatrixCanSolveDenseVector extends BinaryOp[DenseMatrix[Double],DenseVector[Double],OpSolveMatrixBy,DenseVector[Double]] {
     override def apply(a : DenseMatrix[Double], b : DenseVector[Double]) = {
-      val rv = a \ new DenseMatrix[Double](b.size, 1, b.data, b.offset, b.stride, true)
+      val rv = a \ DenseMatrix.newww[Double](b.size, 1, b.data, b.offset, b.stride, true)
       DenseVector.newww[Double](rv.data)
     }
   }

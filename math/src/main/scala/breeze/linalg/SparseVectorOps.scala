@@ -441,7 +441,7 @@ trait SparseVectorOps_Double { this: SparseVector.type =>
       i += 1
     }
 
-    new SparseVector(outI, outD, out, a.length)
+    SparseVector.newww(outI, outD, out, a.length)
     
     }
   }; implicit val canMulScalar_VV_Double = new canMulScalar_VV_Double ()
@@ -1020,7 +1020,7 @@ trait SparseVectorOps_Float { this: SparseVector.type =>
       i += 1
     }
 
-    new SparseVector(outI, outD, out, a.length)
+    SparseVector.newww(outI, outD, out, a.length)
     
     }
   }; implicit val canMulScalar_VV_Float = new canMulScalar_VV_Float ()
@@ -1599,7 +1599,7 @@ trait SparseVectorOps_Int { this: SparseVector.type =>
       i += 1
     }
 
-    new SparseVector(outI, outD, out, a.length)
+    SparseVector.newww(outI, outD, out, a.length)
     
     }
   }; implicit val canMulScalar_VV_Int = new canMulScalar_VV_Int ()
@@ -2138,7 +2138,7 @@ trait SparseVectorOps_Complex { this: SparseVector.type =>
       i += 1
     }
 
-    new SparseVector(outI, outD, out, a.length)
+    SparseVector.newww(outI, outD, out, a.length)
     
     }
   }; implicit val canMulScalar_VV_Complex = new canMulScalar_VV_Complex ()

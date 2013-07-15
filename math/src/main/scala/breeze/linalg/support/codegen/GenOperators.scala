@@ -866,7 +866,7 @@ object GenSVOps extends App {
 
 
   def timesLoop(tpe: String, zero: String) = timesLoopTemplate(tpe, zero, {(data, index, activeSize) =>
-    "new SparseVector(%s, %s, %s, a.length)".format(index, data, activeSize)
+    "SparseVector.newww(%s, %s, %s, a.length)".format(index, data, activeSize)
   })
 
   def setLoop = """require(b.length == a.length, "Vectors must be the same length!")
@@ -1200,7 +1200,7 @@ object GenCSCOps extends App {
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Scalar](a.rows, b.cols)
+      val res = DenseMatrix.newww[Scalar](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = 0
@@ -1225,7 +1225,7 @@ object GenCSCOps extends App {
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Scalar](a.rows, b.cols)
+      val res = DenseMatrix.newww[Scalar](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = b.colPtrs(i)

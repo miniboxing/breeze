@@ -40,7 +40,7 @@ trait CSCMatrixOps_Double { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Double](a.rows, b.cols)
+      val res = DenseMatrix.newww[Double](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = 0
@@ -68,7 +68,7 @@ trait CSCMatrixOps_Double { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Double](a.rows, b.cols)
+      val res = DenseMatrix.newww[Double](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = b.colPtrs(i)
@@ -166,7 +166,7 @@ trait CSCMatrixOps_Float { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Float](a.rows, b.cols)
+      val res = DenseMatrix.newww[Float](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = 0
@@ -194,7 +194,7 @@ trait CSCMatrixOps_Float { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Float](a.rows, b.cols)
+      val res = DenseMatrix.newww[Float](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = b.colPtrs(i)
@@ -292,7 +292,7 @@ trait CSCMatrixOps_Int { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Int](a.rows, b.cols)
+      val res = DenseMatrix.newww[Int](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = 0
@@ -320,7 +320,7 @@ trait CSCMatrixOps_Int { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Int](a.rows, b.cols)
+      val res = DenseMatrix.newww[Int](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = b.colPtrs(i)
@@ -418,7 +418,7 @@ trait CSCMatrixOps_Complex { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Complex](a.rows, b.cols)
+      val res = DenseMatrix.newww[Complex](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = 0
@@ -446,7 +446,7 @@ trait CSCMatrixOps_Complex { this: CSCMatrix.type =>
       if(a.cols != b.rows) throw new RuntimeException("Dimension Mismatch!")
 
 
-      val res = new DenseMatrix[Complex](a.rows, b.cols)
+      val res = DenseMatrix.newww[Complex](a.rows, b.cols)
       var i = 0
       while (i < b.cols) {
         var j = b.colPtrs(i)

@@ -176,7 +176,7 @@ class VectorBuilder[@spec(Double,Int, Float) E](private var _index: Array[Int],
       out += 1
 
     require(ord.length == 0 || length > outIndex.last, "Index out of bounds in constructing sparse vector.")
-    new SparseVector(outIndex, outValues, out, length)
+    SparseVector.newww(outIndex, outValues, out, length)
   }
 
   private def sortedIndices(indices: Array[Int]) = {

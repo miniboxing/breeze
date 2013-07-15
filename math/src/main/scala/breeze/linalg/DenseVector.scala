@@ -158,7 +158,7 @@ class DenseVector[@spec(Double, Int, Float) E](val data: Array[E],
 
   /** Creates a view of this DenseVector that is represented as a 1 by length DenseMatrix */
   def asDenseMatrix: DenseMatrix[E] = {
-    new DenseMatrix[E](1, length, data, offset, stride)
+    DenseMatrix.newww[E](1, length, data, offset, stride)
   }
 
   /**Returns the k-norm of this Vector. */
@@ -415,7 +415,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   implicit def canTranspose[V]: CanTranspose[DenseVector[V], DenseMatrix[V]] = {
     new CanTranspose[DenseVector[V], DenseMatrix[V]] {
       def apply(from: DenseVector[V]) = {
-        new DenseMatrix(data = from.data, offset = from.offset, cols = from.length, rows = 1, majorStride = from.stride)
+        DenseMatrix.newww(data = from.data, offset = from.offset, cols = from.length, rows = 1, majorStride = from.stride)
       }
     }
   }
@@ -423,7 +423,7 @@ object DenseVector extends VectorConstructors[DenseVector] with DenseVector_Gene
   implicit def canTransposeComplex: CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] = {
     new CanTranspose[DenseVector[Complex], DenseMatrix[Complex]] {
       def apply(from: DenseVector[Complex]) = {
-        new DenseMatrix(data = from.data map { _.conjugate },
+        DenseMatrix.newww(data = from.data map { _.conjugate },
                         offset = from.offset,
                         cols = from.length,
                         rows = 1,
